@@ -215,6 +215,7 @@ func TestPeerConnection_SetConfiguration(t *testing.T) {
 					RTCPMuxPolicy:               RTCPMuxPolicyRequire,
 					ICECandidatePoolSize:        1,
 					AlwaysNegotiateDataChannels: true,
+					RTPHeaderEncryptionPolicy:   RTPHeaderEncryptionPolicyNegotiate,
 				})
 				if err != nil {
 					return pc, err
@@ -319,11 +320,13 @@ func TestPeerConnection_GetConfiguration(t *testing.T) {
 	assert.NoError(t, err)
 
 	expected := Configuration{
-		ICEServers:           []ICEServer{},
-		ICETransportPolicy:   ICETransportPolicyAll,
-		BundlePolicy:         BundlePolicyBalanced,
-		RTCPMuxPolicy:        RTCPMuxPolicyRequire,
-		ICECandidatePoolSize: 0,
+		ICEServers:                  []ICEServer{},
+		ICETransportPolicy:          ICETransportPolicyAll,
+		BundlePolicy:                BundlePolicyBalanced,
+		RTCPMuxPolicy:               RTCPMuxPolicyRequire,
+		ICECandidatePoolSize:        0,
+		AlwaysNegotiateDataChannels: false,
+		RTPHeaderEncryptionPolicy:   RTPHeaderEncryptionPolicyNegotiate,
 	}
 	actual := pc.GetConfiguration()
 	assert.True(t, &expected != &actual)
@@ -331,12 +334,16 @@ func TestPeerConnection_GetConfiguration(t *testing.T) {
 	assert.Equal(t, expected.ICETransportPolicy, actual.ICETransportPolicy)
 	assert.Equal(t, expected.BundlePolicy, actual.BundlePolicy)
 	assert.Equal(t, expected.RTCPMuxPolicy, actual.RTCPMuxPolicy)
+	assert.Equal(t, expected.AlwaysNegotiateDataChannels, actual.AlwaysNegotiateDataChannels)
+
+	// This field is not tested because it is not supported in the JavaScript/Wasm bindings.
+	// assert.Equal(t, expected.RTPHeaderEncryptionPolicy, actual.RTPHeaderEncryptionPolicy)
+
 	// nolint:godox
 	// TODO(albrow): Uncomment this after #513 is fixed.
 	// See: https://github.com/pion/webrtc/issues/513.
 	// assert.Equal(t, len(expected.Certificates), len(actual.Certificates))
 	assert.Equal(t, expected.ICECandidatePoolSize, actual.ICECandidatePoolSize)
-	assert.False(t, actual.AlwaysNegotiateDataChannels)
 	assert.NoError(t, pc.Close())
 }
 

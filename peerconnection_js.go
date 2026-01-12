@@ -51,6 +51,7 @@ func (api *API) NewPeerConnection(configuration Configuration) (_ *PeerConnectio
 			err = recoveryToError(e)
 		}
 	}()
+
 	configMap := configurationToValue(configuration)
 	underlying := js.Global().Get("window").Get("RTCPeerConnection").New(configMap)
 	return &PeerConnection{
@@ -568,6 +569,7 @@ func configurationToValue(configuration Configuration) js.Value {
 		"peerIdentity":                stringToValueOrUndefined(configuration.PeerIdentity),
 		"iceCandidatePoolSize":        uint8ToValueOrUndefined(configuration.ICECandidatePoolSize),
 		"alwaysNegotiateDataChannels": boolToValueOrUndefined(configuration.AlwaysNegotiateDataChannels),
+		"rtpHeaderEncryptionPolicy":   stringEnumToValueOrUndefined(configuration.RTPHeaderEncryptionPolicy.String()),
 
 		// Note: Certificates are not currently supported.
 		// "certificates": configuration.Certificates,
@@ -624,6 +626,8 @@ func valueToConfiguration(configValue js.Value) Configuration {
 		PeerIdentity:                valueToStringOrZero(configValue.Get("peerIdentity")),
 		ICECandidatePoolSize:        valueToUint8OrZero(configValue.Get("iceCandidatePoolSize")),
 		AlwaysNegotiateDataChannels: valueToBoolOrFalse(configValue.Get("alwaysNegotiateDataChannels")),
+		RTPHeaderEncryptionPolicy: newRTPHeaderEncryptionPolicy(
+			valueToStringOrZero(configValue.Get("rtpHeaderEncryptionPolicy"))),
 
 		// Note: Certificates are not supported.
 		// Certificates []Certificate
